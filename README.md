@@ -2,7 +2,8 @@
 Canada DevOps Community of Practice Hackathon Toronto - Team 4 
 
 Project Name - AI Observability & Monitoring Speech Recognition | Orange Honey Mustar
-Team Mentor -
+
+Team Mentor - Gurtej Pal Singh
 
 Participant Names - 
 
