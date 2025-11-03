@@ -4,3 +4,4 @@ pydantic
 prometheus-client
 python-multipart
 openai
+python-dotenv
