@@ -3,6 +3,8 @@ import './App.css'
 import Welcome from './pages/Welcome'
 import ApiUsage from './pages/ApiUsage'
 
+const API_URL = 'http://localhost:8000'
+
 function App() {
   const [currentPage, setCurrentPage] = useState('welcome')
 
