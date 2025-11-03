@@ -1,54 +1,54 @@
 import '../App.css'
 import MagicButton from '../components/MagicButton'
+import { useState, useEffect } from 'react'
 
 function ApiUsage({ onNavigateToWelcome }) {
-  // Mock data for the template
-  const mockApiStats = {
-    totalRequests: 12450,
-    totalTokens: 2840000,
-    avgLatency: 245,
-    successRate: 98.5,
-    errorRate: 1.5
+  const [apiStats, setApiStats] = useState({
+    totalTokens: 0,
+    avgLatency: 0,
+    successRate: 100.0,
+    errorRate: 0.0
+  })
+  const [endpoints, setEndpoints] = useState([])
+  const [recentActivity, setRecentActivity] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchUsageData = async () => {
+    try {
+      setLoading(true)
+      const [statsRes, endpointsRes, activityRes] = await Promise.all([
+        fetch('http://localhost:8000/api/v1/usage/stats'),
+        fetch('http://localhost:8000/api/v1/usage/endpoints'),
+        fetch('http://localhost:8000/api/v1/usage/activity')
+      ])
+
+      if (statsRes.ok) {
+        const stats = await statsRes.json()
+        setApiStats(stats)
+      }
+
+      if (endpointsRes.ok) {
+        const data = await endpointsRes.json()
+        setEndpoints(data.endpoints || [])
+      }
+
+      if (activityRes.ok) {
+        const data = await activityRes.json()
+        setRecentActivity(data.activity || [])
+      }
+    } catch (error) {
+      console.error('Error fetching usage data:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const mockEndpoints = [
-    {
-      name: '/api/v1/chat',
-      requests: 5420,
-      avgLatency: 320,
-      tokens: 1250000,
-      status: 'healthy'
-    },
-    {
-      name: '/api/v1/image-generation',
-      requests: 3890,
-      avgLatency: 1800,
-      tokens: 890000,
-      status: 'healthy'
-    },
-    {
-      name: '/api/v1/transcription',
-      requests: 2140,
-      avgLatency: 450,
-      tokens: 450000,
-      status: 'warning'
-    },
-    {
-      name: '/api/v1/sentiment',
-      requests: 1000,
-      avgLatency: 120,
-      tokens: 250000,
-      status: 'healthy'
-    }
-  ]
-
-  const mockRecentActivity = [
-    { time: '2m ago', endpoint: '/api/v1/chat', tokens: 1250, latency: 285, status: 'success' },
-    { time: '5m ago', endpoint: '/api/v1/image-generation', tokens: 3200, latency: 1820, status: 'success' },
-    { time: '8m ago', endpoint: '/api/v1/transcription', tokens: 890, latency: 445, status: 'success' },
-    { time: '12m ago', endpoint: '/api/v1/chat', tokens: 2100, latency: 310, status: 'error' },
-    { time: '15m ago', endpoint: '/api/v1/sentiment', tokens: 650, latency: 115, status: 'success' }
-  ]
+  useEffect(() => {
+    fetchUsageData()
+    // Refresh every 5 seconds
+    const interval = setInterval(fetchUsageData, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="api-usage-container">
@@ -78,20 +78,13 @@ function ApiUsage({ onNavigateToWelcome }) {
         {/* Overview Stats */}
         <div className="stats-grid">
           <div className="stat-card">
-            <div className="stat-icon">📊</div>
-            <div className="stat-info">
-              <h3 className="stat-label">Total Requests</h3>
-              <p className="stat-value">{mockApiStats.totalRequests.toLocaleString()}</p>
-              <span className="stat-change positive">+12.5% from last hour</span>
-            </div>
-          </div>
-
-          <div className="stat-card">
             <div className="stat-icon">🔤</div>
             <div className="stat-info">
               <h3 className="stat-label">Total Tokens</h3>
-              <p className="stat-value">{(mockApiStats.totalTokens / 1000).toFixed(0)}K</p>
-              <span className="stat-change positive">+8.3% from last hour</span>
+              <p className="stat-value">
+                {loading ? '...' : (apiStats.totalTokens / 1000).toFixed(0) + 'K'}
+              </p>
+              <span className="stat-change positive">Last 24 hours</span>
             </div>
           </div>
 
@@ -99,8 +92,10 @@ function ApiUsage({ onNavigateToWelcome }) {
             <div className="stat-icon">⚡</div>
             <div className="stat-info">
               <h3 className="stat-label">Avg Latency</h3>
-              <p className="stat-value">{mockApiStats.avgLatency}ms</p>
-              <span className="stat-change negative">-15ms from last hour</span>
+              <p className="stat-value">
+                {loading ? '...' : apiStats.avgLatency + 'ms'}
+              </p>
+              <span className="stat-change">Last 24 hours</span>
             </div>
           </div>
 
@@ -108,8 +103,10 @@ function ApiUsage({ onNavigateToWelcome }) {
             <div className="stat-icon">✅</div>
             <div className="stat-info">
               <h3 className="stat-label">Success Rate</h3>
-              <p className="stat-value">{mockApiStats.successRate}%</p>
-              <span className="stat-change positive">+0.2% from last hour</span>
+              <p className="stat-value">
+                {loading ? '...' : apiStats.successRate + '%'}
+              </p>
+              <span className="stat-change positive">Last 24 hours</span>
             </div>
           </div>
         </div>
@@ -130,6 +127,7 @@ function ApiUsage({ onNavigateToWelcome }) {
                 className="refresh-button"
                 particleCount={4}
                 enableTilt={false}
+                onClick={fetchUsageData}
               >
                 Refresh
               </MagicButton>
@@ -143,7 +141,20 @@ function ApiUsage({ onNavigateToWelcome }) {
               <div className="table-cell">Tokens</div>
               <div className="table-cell">Status</div>
             </div>
-            {mockEndpoints.map((endpoint, index) => (
+            {loading && endpoints.length === 0 ? (
+              <div className="table-row">
+                <div className="table-cell" colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+                  Loading...
+                </div>
+              </div>
+            ) : endpoints.length === 0 ? (
+              <div className="table-row">
+                <div className="table-cell" colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+                  No endpoint data available
+                </div>
+              </div>
+            ) : (
+              endpoints.map((endpoint, index) => (
               <div key={index} className="table-row">
                 <div className="table-cell endpoint-name">
                   <code>{endpoint.name}</code>
@@ -157,7 +168,8 @@ function ApiUsage({ onNavigateToWelcome }) {
                   </span>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -167,7 +179,16 @@ function ApiUsage({ onNavigateToWelcome }) {
             <h2 className="section-title">Recent Activity</h2>
           </div>
           <div className="activity-list">
-            {mockRecentActivity.map((activity, index) => (
+            {loading && recentActivity.length === 0 ? (
+              <div className="activity-item" style={{ textAlign: 'center', padding: '20px' }}>
+                Loading...
+              </div>
+            ) : recentActivity.length === 0 ? (
+              <div className="activity-item" style={{ textAlign: 'center', padding: '20px' }}>
+                No recent activity
+              </div>
+            ) : (
+              recentActivity.map((activity, index) => (
               <div key={index} className="activity-item">
                 <div className="activity-time">{activity.time}</div>
                 <div className="activity-endpoint">
@@ -181,7 +202,8 @@ function ApiUsage({ onNavigateToWelcome }) {
                   {activity.status === 'success' ? '✓' : '✗'}
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
