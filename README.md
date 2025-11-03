@@ -4,14 +4,49 @@
 
 Built during the **Canada DevOps Gen AI Hackathon 2025**, SparkVoice demonstrates how DevOps + GenAI can converge for inclusivity, transparency, and automation.
 
-## 🧩 Features
+## 📋 Current Status (Iteration 1)
 
-✅ **Real-time voice recognition** using OpenAI Whisper API  
-✅ **FastAPI backend** for processing & logging audio  
-✅ **React 19.2 frontend** with live transcription + metrics view  
-✅ **Integrated Prometheus + Grafana dashboards** for observability  
-✅ **Dockerized deployment** with CI/CD via GitHub Actions  
-✅ **Accessible UX** designed for Parkinson's use case  
+### ✅ Completed
+- ✅ **Basic FastAPI backend** with health check endpoints
+- ✅ **Basic React frontend** with UI and backend connection
+- ✅ **Docker configuration** for backend and frontend
+- ✅ **Docker Compose** setup with all services
+- ✅ **Prometheus & Grafana** infrastructure (configured but not yet connected)
+- ✅ **CI/CD pipeline** structure (GitHub Actions workflows)
+
+### 🚧 Next Steps (Incremental Development)
+
+The application is currently in a simplified state and will be built incrementally:
+
+1. **Voice Recording Feature**
+   - [ ] Add browser MediaRecorder API for voice capture
+   - [ ] Create recording UI with start/stop buttons
+   - [ ] Display recording status and timer
+
+2. **Backend Audio Processing**
+   - [ ] Add audio file upload endpoint (`POST /api/v1/transcribe`)
+   - [ ] Integrate OpenAI Whisper API
+   - [ ] Handle audio file validation and processing
+
+3. **Transcription Display**
+   - [ ] Display transcribed text in frontend
+   - [ ] Show processing status and errors
+   - [ ] Add transcription history
+
+4. **Observability & Metrics**
+   - [ ] Add Prometheus metrics to backend
+   - [ ] Connect Prometheus to scrape metrics
+   - [ ] Configure Grafana dashboard for visualization
+
+5. **Accessibility Enhancements**
+   - [ ] Optimize UI for Parkinson's users (larger buttons, clear feedback)
+   - [ ] Add keyboard navigation
+   - [ ] Improve voice recording reliability
+
+6. **Testing & Documentation**
+   - [ ] Add unit tests for backend
+   - [ ] Add integration tests
+   - [ ] Complete API documentation  
 
 ## 🚀 Quick Start
 
@@ -86,18 +121,20 @@ npm run dev
 └── .github/workflows/         # CI/CD pipelines
 ```
 
-## 🔌 API Endpoints
+## 🔌 API Endpoints (Current)
 
 - `GET /` - API information
-- `GET /health` - Health check
-- `POST /api/v1/transcribe` - Transcribe audio file
-- `GET /metrics` - Prometheus metrics
+- `GET /health` - Health check endpoint
+
+### Planned Endpoints
+- `POST /api/v1/transcribe` - Transcribe audio file (to be implemented)
+- `GET /metrics` - Prometheus metrics (to be implemented)
 
 See full API documentation at `/docs` when the backend is running.
 
-## 📊 Observability
+## 📊 Observability (Planned)
 
-### Prometheus Metrics
+### Prometheus Metrics (To be implemented)
 
 - `speech_requests_total` - Total requests by status (success/error)
 - `speech_processing_duration_seconds` - Processing time histogram
@@ -105,10 +142,10 @@ See full API documentation at `/docs` when the backend is running.
 
 ### Grafana Dashboards
 
-Access the pre-configured SparkVoice dashboard at:
-- Grafana URL: http://localhost:3001
+Infrastructure is ready but dashboards need to be connected:
+- Grafana URL: http://localhost:3001 (when running with Docker)
 - Login: admin/admin
-- Dashboard: SparkVoice - AI Observability Dashboard
+- Dashboard: SparkVoice - AI Observability Dashboard (to be configured)
 
 ## 🧪 Testing
 
