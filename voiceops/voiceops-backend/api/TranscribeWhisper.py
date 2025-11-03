@@ -4,13 +4,16 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 # Load environment variables from backend root .env (one level up from api/)
-load_dotenv(dotenv_path=pathlib.Path(__file__).resolve().parents[1] / '.env')
+_env_loaded = load_dotenv(dotenv_path=pathlib.Path(__file__).resolve().parents[1] / '.env')
+# Also try a local .env in this folder if not loaded
+if not _env_loaded:
+    load_dotenv(dotenv_path=pathlib.Path(__file__).resolve().parent / '.env')
 
 # Initialize client from OPENAI_API_KEY in env
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Path to your audio file (e.g., .mp3, .wav, .m4a)
-audio_path = "audio.mp3"
+# Path to your audio file (e.g., .mp3, .wav, .m4a) relative to this script
+audio_path = str(pathlib.Path(__file__).resolve().parent / "audio.mp3")
 
 # Open the file in binary mode
 with open(audio_path, "rb") as audio_file:
