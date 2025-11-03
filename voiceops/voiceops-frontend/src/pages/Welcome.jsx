@@ -164,7 +164,8 @@ function Welcome({ onNavigateToApiUsage }) {
           }
           streamRef.current = null;
           mediaRecorderRef.current = null;
-          convertToWAV(audioBlob);
+          // Skip WAV conversion - Whisper supports webm natively
+          // convertToWAV(audioBlob);
         } catch (error) {
           console.error('Error in mediaRecorder.onstop:', error);
         }
@@ -244,16 +245,58 @@ function Welcome({ onNavigateToApiUsage }) {
     return view.buffer;
   };
 
-  // --- Transcription Simulation ---
-  const handleTranscribe = () => {
+  // --- Save audio file and then transcribe ---
+  const handleTranscribe = async () => {
     if (!audioBlob) return;
     setIsTranscribing(true);
-    setTimeout(() => {
-      setTranscription(
-        "Simulated transcription. Actual Whisper turbo integration requires backend API."
-      );
+    setTranscription(null);
+    try {
+      // Step 1: Save audio file to backend/api/
+      // Determine correct filename based on blob type
+      let filename = "audio.mp3";
+      if (audioBlob.type === "audio/wav" || audioBlob.type === "audio/wave") {
+        filename = "audio.wav";
+      } else if (audioBlob.type === "audio/webm") {
+        // Save webm recordings as webm (Whisper supports it)
+        filename = "audio.webm";
+      } else if (uploadedFile) {
+        // Use original filename for uploaded files
+        filename = uploadedFile.name;
+      }
+      
+      console.log("Saving audio blob:", { type: audioBlob.type, size: audioBlob.size, filename });
+      
+      const form = new FormData();
+      form.append("file", audioBlob, filename);
+
+      const saveRes = await fetch("http://localhost:8000/api/v1/save-audio", {
+        method: "POST",
+        body: form,
+      });
+      
+      if (!saveRes.ok) {
+        const errorData = await saveRes.json().catch(() => ({ detail: "Unknown error" }));
+        throw new Error(`Failed to save audio: ${errorData.detail || saveRes.status}`);
+      }
+
+      // Step 2: Run TranscribeWhisper.py script
+      const transcribeRes = await fetch("http://localhost:8000/api/v1/transcribe", {
+        method: "POST",
+      });
+      
+      if (!transcribeRes.ok) {
+        const errorData = await transcribeRes.json().catch(() => ({ detail: "Unknown error" }));
+        throw new Error(errorData.detail || `Server error: ${transcribeRes.status}`);
+      }
+      
+      const data = await transcribeRes.json();
+      setTranscription(data?.text || "No transcription available");
+    } catch (e) {
+      console.error("Transcription error:", e);
+      setTranscription(`Error: ${e.message || "Transcription failed. Please check backend connection."}`);
+    } finally {
       setIsTranscribing(false);
-    }, 2000);
+    }
   };
 
   const formatTime = (s) =>
