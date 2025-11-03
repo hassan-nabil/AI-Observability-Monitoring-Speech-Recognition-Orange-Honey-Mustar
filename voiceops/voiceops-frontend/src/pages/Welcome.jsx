@@ -377,7 +377,7 @@ function Welcome({ onNavigateToApiUsage }) {
         <div className="welcome-title-wrapper">
           <ErrorBoundary>
             <ASCIIText
-              text="VoiceOps"
+              text="SparkVoice"
               enableWaves
               asciiFontSize={8}
               textFontSize={240}

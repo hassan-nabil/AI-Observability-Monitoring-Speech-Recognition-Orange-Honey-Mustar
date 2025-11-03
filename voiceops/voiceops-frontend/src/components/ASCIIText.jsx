@@ -349,7 +349,7 @@ class CanvAscii {
 }
 
 export default function ASCIIText({
-  text = 'VoiceOps',
+  text = 'SparkVoice',
   asciiFontSize = 8,
   textFontSize = 220,
   textColor = '#FF6B35',
